@@ -1,0 +1,13 @@
+# Ignore everything in the data folder
+data/
+
+# Ignore the models folder
+models/
+
+# Ignore Python cache and environment files
+__pycache__/
+.env
+venv/
+.ipynb_checkpoints/
+chest_xray
+.venv/
