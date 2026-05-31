@@ -1,11 +1,68 @@
 <!DOCTYPE html>
 <html>
+<head>
+<meta charset="UTF-8">
+<title>Pneumonia Detection</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
 <body>
-    <h1>Pneumonia Detection AI</h1>
-    <input type="file" id="fileInput">
-    <button onclick="predict()">Detect Pneumonia</button>
-    <p id="output"></p>
 
-    <script src="/static/script.js"></script>
+<div class="topbar">
+  <span><span class="live-dot"></span>Live Analysis</span>
+  <span>Chest Radiology · AI Assisted</span>
+</div>
+
+<h1>Pneumonia <span>Detection</span></h1>
+<p class="sub">Upload a chest X-ray. Results in seconds.</p>
+
+<span class="field-label">X-Ray Image</span>
+<input type="file" id="fileInput" accept="image/*" onchange="onFile(this)">
+<div id="filename"></div>
+
+<button id="btn" onclick="predict()">RUN ANALYSIS</button>
+
+<div id="output">
+  <div class="result-tag">Diagnosis</div>
+  <div class="verdict" id="verdict"></div>
+  <div class="conf" id="conf"></div>
+</div>
+
+<p class="disclaimer">Not a substitute for professional medical diagnosis. For clinical use only under physician supervision.</p>
+
+<script>
+  function onFile(input) {
+    const f = input.files[0];
+    document.getElementById('filename').textContent = f ? '→ ' + f.name : '';
+  }
+
+  async function predict() {
+    const file = document.getElementById('fileInput').files[0];
+    if (!file) { alert('Please select an image first.'); return; }
+
+    const btn = document.getElementById('btn');
+    btn.disabled = true;
+    btn.textContent = 'ANALYZING...';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/predict', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      const isPos = data.result.toLowerCase().includes('pneumonia');
+      const out = document.getElementById('output');
+      out.className = isPos ? 'pneumonia' : 'normal';
+      out.style.display = 'block';
+      document.getElementById('verdict').textContent = data.result;
+      document.getElementById('conf').textContent = 'Confidence: ' + (parseFloat(data.confidence) * 100).toFixed(1) + '%';
+    } catch(e) {
+      alert('Server error. Is the backend running?');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'RUN ANALYSIS';
+  }
+</script>
 </body>
 </html>
